@@ -1,4 +1,4 @@
-# Case-minerva-Foods
+# Case minerva Foods
 
 CASE ANALISTA DE SUSTENTAÇÃO – FOCO EM SRE
 
