@@ -18,7 +18,7 @@ log_msg() {
 }
 
 # ---------------------------------------------------------------------
-# 1️⃣  Medir tempo e obter código HTTP
+# Medir tempo e obter código HTTP
 #    -w "%{http_code}"   → devolve apenas o código de status
 #    -o /dev/null        → descarta o corpo da resposta
 #    -s                  → modo silencioso (sem barra de progresso)
@@ -34,7 +34,7 @@ END_NS=$(date +%s%N)
 LATENCY_MS=$(( (END_NS - START_NS) / 1000000 ))
 
 # ---------------------------------------------------------------------
-# 2️⃣  Avaliar resultado
+# valiar resultado
 # ---------------------------------------------------------------------
 if [[ "$HTTP_CODE" -ne 200 ]] || (( LATENCY_MS > MAX_LATENCY_MS )); then
     # Monta mensagem de alerta
