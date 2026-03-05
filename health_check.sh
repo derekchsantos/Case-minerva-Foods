@@ -1,47 +1,41 @@
 #!/usr/bin/env bash
-# ----------------------------------------------------------------------
-# health_check.sh – verifica a saúde da API de pagamentos (+Carne)
-# Requisitos: curl, date (GNU coreutils), awk
-# ----------------------------------------------------------------------
 
-# ----------- CONFIGURAÇÕES -------------------------------------------
+# ------------------------------------------------------------
+# Configurações
+# ------------------------------------------------------------
 URL="https://api.maiscarne.com/pagamentos/health"
-MAX_LATENCY_MS=500                     # SLA máximo em milissegundos
 LOG_FILE="health_check.log"
-# ---------------------------------------------------------------------
+MAX_TIME_MS=500          # limite máximo de tempo de resposta em milissegundos
 
-# Função para escrever no log (inclui timestamp legível)
-log_msg() {
-    local level="$1"
-    local msg="$2"
-    printf "%s %-7s %s\n" "$(date '+%Y-%m-%d %H:%M:%S')" "$level" "$msg" >> "$LOG_FILE"
+# ------------------------------------------------------------
+# Função para escrever no log com timestamp
+# ------------------------------------------------------------
+log_alert() {
+    local message="$1"
+    echo "$(date '+%Y-%m-%d %H:%M:%S') - ALERT: $message" >> "$LOG_FILE"
 }
 
-# ---------------------------------------------------------------------
-# Medir tempo e obter código HTTP
-#    -w "%{http_code}"   → devolve apenas o código de status
-#    -o /dev/null        → descarta o corpo da resposta
-#    -s                  → modo silencioso (sem barra de progresso)
-#    -D -                → grava headers temporariamente (necessário para -w)
-# ---------------------------------------------------------------------
-START_NS=$(date +%s%N)                     # nanosegundos (precisão alta)
+# ------------------------------------------------------------
+# Executa a requisição e captura status e tempo
+# ------------------------------------------------------------
+# -s : silencioso (não mostra barra de progresso)
+# -o /dev/null : descarta o corpo da resposta
+# -w "%{http_code} %{time_total}" : imprime código HTTP e tempo total em segundos
+response=$(curl -s -o /dev/null -w "%{http_code} %{time_total}" "$URL")
+http_code=$(echo "$response" | awk '{print $1}')
+time_sec=$(echo "$response" | awk '{print $2}')
 
-# Executa a requisição
-HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" "$URL")
-END_NS=$(date +%s%N)
+# Converte o tempo para milissegundos (com duas casas decimais)
+time_ms=$(awk "BEGIN {printf \"%.0f\", $time_sec * 1000}")
 
-# Calcula latência em milissegundos
-LATENCY_MS=$(( (END_NS - START_NS) / 1000000 ))
-
-# ---------------------------------------------------------------------
-# valiar resultado
-# ---------------------------------------------------------------------
-if [[ "$HTTP_CODE" -ne 200 ]] || (( LATENCY_MS > MAX_LATENCY_MS )); then
-    # Monta mensagem de alerta
-    ALERT_MSG="ALERTA – status=${HTTP_CODE} latency=${LATENCY_MS}ms (limite=${MAX_LATENCY_MS}ms)"
-    log_msg "WARN" "$ALERT_MSG"
+# ------------------------------------------------------------
+# Avalia o resultado
+# ------------------------------------------------------------
+if [[ "$http_code" -ne 200 ]]; then
+    log_alert "Código HTTP inesperado: $http_code (tempo de resposta: ${time_ms}ms)"
+elif [[ "$time_ms" -gt "$MAX_TIME_MS" ]]; then
+    log_alert "Tempo de resposta alto: ${time_ms}ms (código HTTP: $http_code)"
 else
-    # Opcional: registrar OK (pode ser comentado para reduzir ruído)
-    INFO_MSG="OK – status=200 latency=${LATENCY_MS}ms"
-    log_msg "INFO" "$INFO_MSG"
+    # Opcional: registrar sucesso (pode ser comentado se não quiser logs de sucesso)
+    echo "$(date '+%Y-%m-%d %H:%M:%S') - OK: Endpoint saudável (HTTP 200, ${time_ms}ms)" >> "$LOG_FILE"
 fi
