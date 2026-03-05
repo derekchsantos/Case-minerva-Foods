@@ -2,3 +2,4 @@
 2026-03-05 15:20:42 - ALERT: Código HTTP inesperado: 000 (tempo de resposta: 74ms)
 2026-03-05 16:32:21 WARN    ALERTA – status=000 latency=589ms (limite=500ms)
 2026-03-05 16:37:18 WARN    ALERTA – status=000 latency=138ms (limite=500ms)
+2026-03-05 16:43:26 - ALERT: Código HTTP inesperado: 000 (tempo de resposta: 203ms)
