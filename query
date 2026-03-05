@@ -1,0 +1,50 @@
+sqlite3 demo_carne.db <<'SQL'
+
+
+-- Cria as tabelas (mesmo esquema simplificado)
+
+
+CREATE TABLE pedidos   (id INTEGER PRIMARY KEY, cliente_id INTEGER, status TEXT, data_criacao TIMESTAMP);
+
+
+CREATE TABLE pagamentos(id INTEGER PRIMARY KEY, pedido_id INTEGER, valor NUMERIC,
+
+
+                        status_pagamento TEXT, data_atualizacao TIMESTAMP);
+
+
+CREATE TABLE clientes (id INTEGER PRIMARY KEY, nome TEXT, email TEXT);
+
+
+-- Insere alguns registros de exemplo
+
+
+INSERT INTO clientes VALUES (1,'João Silva','joao.silva@restaurante.com.br');
+
+
+INSERT INTO clientes VALUES (2,'Maria Santos','maria.santos@supermercado.com.br');
+
+
+INSERT INTO pedidos   VALUES (101,1,'ABERTO','2024-09-01 10:00:00');
+
+
+INSERT INTO pedidos   VALUES (102,2,'ABERTO','2024-09-01 10:05:00');
+
+
+-- Pagamentos “presos” (status = 'processando' e >5 min)
+
+
+INSERT INTO pagamentos VALUES (201,101,150.00,'processando','2024-09-01 10:03:00');  -- 7 min atrás
+
+
+INSERT INTO pagamentos VALUES (202,102,200.00,'processando','2024-09-01 10:04:30');  -- 5,5 min atrás
+
+
+-- Pagamento já concluído (não deve aparecer)
+
+
+INSERT INTO pagamentos VALUES (203,101,150.00,'concluido','2024-09-01 10:06:00');
+
+
+SQL
+
