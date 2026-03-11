@@ -6,4 +6,4 @@ FROM pagamentos p
 JOIN pedidos ped ON ped.id = p.pedido_id
 JOIN clientes c   ON c.id = ped.cliente_id
 WHERE p.status_pagamento = 'processando'
-  AND (strftime('%s','now') - strftime('%s',p.data_atualizacao)) > 300;
+AND (strftime('%s','now') - strftime('%s',p.data_atualizacao)) > 300;
